@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
 import Note from './components/Note'
 import noteService from './services/notes'
 
@@ -28,8 +27,8 @@ const App = () => {
   useEffect( ()=> {
     noteService
       .getAll()
-      .then(response => {
-        setNotes(response.data)
+      .then(initalNotes => {
+        setNotes(initalNotes)
       })      
   }, [])
 
@@ -47,8 +46,8 @@ const App = () => {
     
       noteService
         .create(noteObject)
-        .then(response => {
-          setNotes(notes.concat(response.data))
+        .then(returnedNote => {
+          setNotes(notes.concat(returnedNote))
           setNewNote('')
         })
   }
@@ -64,8 +63,13 @@ const App = () => {
     //PATCH changes only some properties of note
     noteService
       .update(id, changedNote)
-      .then(response => {
-        setNotes(notes.map(note => note.id !== id ? note : response.data))
+      .then(returnedNote => {
+        setNotes(notes.map(note => note.id !== id ? note : returnedNote))
+      })
+      .catch (error => {
+        alert(`the note '${note.content}' was already deleted from the server`)
+        //set state to contain all notes except note with id in question
+        setNotes(notes.filter(n => n.id !== id))
       })
   }
 
