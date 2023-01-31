@@ -32,7 +32,7 @@
     },
     {
       "content": "I'm gonna be a rockstar dev",
-      "important": false,
+      "important": true,
       "id": 7
     }
   ]
