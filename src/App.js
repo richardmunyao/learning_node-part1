@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
-import Note from './components/Note'
+import Note from './components/Note'  
+import Notification from './components/Notification'
 import noteService from './services/notes'
 
 const App = () => {
@@ -8,6 +8,7 @@ const App = () => {
   const [notes, setNotes] = useState([])
   const [newNote, setNewNote] = useState('')
   const [showAll, setShowAll] = useState(true)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   //fetching from server, v1
   /*
@@ -28,8 +29,8 @@ const App = () => {
   useEffect( ()=> {
     noteService
       .getAll()
-      .then(response => {
-        setNotes(response.data)
+      .then(initalNotes => {
+        setNotes(initalNotes)
       })      
   }, [])
 
@@ -47,8 +48,8 @@ const App = () => {
     
       noteService
         .create(noteObject)
-        .then(response => {
-          setNotes(notes.concat(response.data))
+        .then(returnedNote => {
+          setNotes(notes.concat(returnedNote))
           setNewNote('')
         })
   }
@@ -64,14 +65,23 @@ const App = () => {
     //PATCH changes only some properties of note
     noteService
       .update(id, changedNote)
-      .then(response => {
-        setNotes(notes.map(note => note.id !== id ? note : response.data))
+      .then(returnedNote => {
+        setNotes(notes.map(note => note.id !== id ? note : returnedNote))
+      })
+      .catch (error => {
+        setErrorMessage(`The note '${note.content}' was already deleted from the server`)
+        setTimeout(()=> {
+          setErrorMessage(null)
+        },5000)
+        //set state to contain all notes except note with id in question
+        setNotes(notes.filter(n => n.id !== id))
       })
   }
 
   return (
     <div>
       <h1>Notes</h1>
+      <Notification message={errorMessage} />
       <div>
         <button onClick={()=>setShowAll(!showAll)}
         >show {showAll ? 'important': 'all'}</button>
@@ -92,6 +102,22 @@ const App = () => {
         <button type="submit">save</button>
 
       </form>
+      <Footer />
+    </div>
+  )
+}
+
+const Footer = () => {
+  const footerStyle = {
+    color: 'green',
+    fontStyle: 'italic',
+    fontSize: 16
+  }
+
+  return (
+    <div style={footerStyle}>
+      <br />
+      <em>Notes app, Department of Computer Science, 2023</em>
     </div>
   )
 }
